@@ -1,0 +1,34 @@
+#instalamos pipenv
+pip install pipenv
+
+#nos posicionamos en la carpeta donde esta nuestro proyecto
+	mkdir ~/Documentos/github/dtable_project
+	mkdir ~/Documentos/github/dtable_project/config
+	cd ~/Documentos/github/dtable_project
+
+# creamos el entorno
+	pipenv shell
+# nos cremo pip file donde se gestionan todas las dependencias, equivalente al requirements.txt. solo pipenv
+	~/Documentos/github/dtable_project/Pipfile
+    # el entorno lo hizo en 
+   /RUTA_DE_ENTORNOS/entornos/dtable_project-d1CfWtDq/bin/activate
+
+
+# instalamos django
+
+pipenv install django==1.11.27
+
+# creamos proyecto
+django-admin startproject dtable
+
+cd dtable
+
+# creamos app
+
+django-admin startapp table
+
+# hacer migraciones
+./manage.py migrate
+
+# crear superuser
+./manage.py createsuperuser
