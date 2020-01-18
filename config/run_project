@@ -1,0 +1,6 @@
+git clone
+cd cd ~/Documentos/github/dtable_project
+
+#crear entorno
+pipenv shell
+
