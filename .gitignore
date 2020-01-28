@@ -114,7 +114,8 @@ venv.bak/
 *.pid
 *.sock
 *.wsgi
-*.dump*.sqlite3
+*.dump
+*.sqlite3
 *.key
 *.pem
 *.ti
@@ -127,7 +128,6 @@ venv.bak/
 !.static/dir_remote_local_static
 !.media/dir_remote_local_media
 #*.lock porque ignoramos el pipfile.lock?
-=======
 ### Django ###
 *.log
 *.pot
@@ -141,5 +141,3 @@ settings_server.py
 .idea/
 .vscode/
 .notes/Alom
-#Base de datos
-*.sqlite3
