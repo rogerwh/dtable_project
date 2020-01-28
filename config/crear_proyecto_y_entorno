@@ -32,3 +32,7 @@ django-admin startapp table
 
 # crear superuser
 ./manage.py createsuperuser
+
+
+# admin
+# admin admin123

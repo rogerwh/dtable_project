@@ -7,6 +7,10 @@ verify_ssl = true
 
 [packages]
 django = "==1.11.27"
+djipsum = "*"
+redis = "*"
+django-redis = "*"
+pillow = "*"
 
 [requires]
 python_version = "2.7"
