@@ -142,3 +142,5 @@ settings_server.py
 .idea/
 .vscode/
 .notes/Alom
+#Base de datos
+*.sqlite3
