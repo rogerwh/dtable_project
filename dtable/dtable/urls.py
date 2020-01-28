@@ -15,7 +15,23 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
+from dtable.views import index, lista_autores_cliente,lista_libros_cliente, lista_autores_json, lista_libros_json, lista_autores_server, lista_libros_server, lista_autores_server_json, lista_libros_server_json, limpiar_cache
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^$', index, name='index'),
+    url(r'^autores/$', lista_autores_cliente, name="lista_autores_cliente"),
+    url(r'^libros/$', lista_libros_cliente, name="lista_libros_cliente"),
+
+    url(r'^autores/server$', lista_autores_server, name="lista_autores_server"),
+    url(r'^libros/server$', lista_libros_server, name="lista_libros_server"),
+
+    url(r'^autores/json$', lista_autores_json, name="lista_autores_json"), 
+    url(r'^libros/json$', lista_libros_json, name="lista_libros_json"),
+    url(r'^autores/server/json$', lista_autores_server_json, name="lista_autores_server_json"),
+    url(r'^libros/server/json$', lista_libros_server_json, name="lista_libros_server_json"),
+    url(r'^limpiar-cache/$', limpiar_cache, name="limpiar_cache"),
+    
+
+
 ]

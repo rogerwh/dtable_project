@@ -128,7 +128,6 @@ venv.bak/
 !.static/dir_remote_local_static
 !.media/dir_remote_local_media
 #*.lock porque ignoramos el pipfile.lock?
-=======
 ### Django ###
 *.log
 *.pot
