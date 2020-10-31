@@ -13,7 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url
+from django.conf.urls import url, include
 from django.contrib import admin
 from dtable.views import index, lista_autores_cliente,lista_libros_cliente, lista_autores_json, lista_libros_json, lista_autores_server, lista_libros_server, lista_autores_server_json, lista_libros_server_json, limpiar_cache
 
@@ -32,6 +32,6 @@ urlpatterns = [
     url(r'^libros/server/json$', lista_libros_server_json, name="lista_libros_server_json"),
     url(r'^limpiar-cache/$', limpiar_cache, name="limpiar_cache"),
     
-
+    url(r'^', include('table.urls')),
 
 ]
