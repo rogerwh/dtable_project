@@ -109,7 +109,7 @@
 	table_c = jQuery('#lista-autores').DataTable({
         "ajax": {
             "processing": true,
-            "url": "{% url 'lista_autores_json_no_cached' %}",
+            "url": "{% if not url_json %}{% url 'lista_autores_json_no_cached' %}{% else %}{{ url_json }}{% endif %}",
             "dataSrc": ""
 
         },

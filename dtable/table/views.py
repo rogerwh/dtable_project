@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.core.cache import cache
 from django.http import HttpResponse
 from django.utils import formats
+from django.core.urlresolvers import reverse
 
 from .models import Autor, Libro, Ciudad
 
@@ -60,34 +61,53 @@ def lista_autores_json_cached(request):
         autores = Autor.objects.all()
         with CodeTimer("for autor in autores: cached"):
             for autor in autores:
-                json_autores.append({
-                    "nombre_completo":autor.nombre+" "+autor.apellidos,
-                    "nombre": autor.nombre,
-                    "apellidos": autor.apellidos,
-                    "email": autor.email,
-                    "fecha_emision": formats.date_format(autor.fecha_emision, "SHORT_DATE_FORMAT"),
-                    "fecha_vencimiento": formats.date_format(autor.fecha_vencimiento, "SHORT_DATE_FORMAT"),
-                    "fecha_pago": formats.date_format(autor.fecha_pago, "SHORT_DATE_FORMAT"),
-                    "total": float(autor.total),
-                    "total_cobrado": float(autor.total_cobrado),
-                    "referencia": str(autor.referencia),
-                    "factura_generica": autor.factura_generica,
-                    "reconexion_aplicada": autor.reconexion_aplicada,
-                    "mora_aplicada": autor.mora_aplicada,
-                    "total2": float(autor.total2),
-                    "total3": float(autor.total3),
-                    "impuestos": float(autor.impuestos),
-                    "subtotal": float(autor.subtotal),
-                    "descuento": float(autor.descuento),
-                    "referencia2": str(autor.referencia2),
-                    "referencia3": str(autor.referencia3),
-                    "url": autor.url,
-                    "url2": autor.url2,
-                    "url3": autor.url3,
-                    "estado": autor.estado,
-                })
+                json_autores.append({   # 14 / 23
+                "nombre_completo":autor.nombre+" "+autor.apellidos,
+                "nombre": autor.nombre,
+                "apellidos": autor.apellidos,
+                "email": autor.email,
+                "fecha_emision": formats.date_format(autor.fecha_emision, "SHORT_DATE_FORMAT"),
+                "fecha_vencimiento": formats.date_format(autor.fecha_vencimiento, "SHORT_DATE_FORMAT"),
+                "fecha_pago": formats.date_format(autor.fecha_pago, "SHORT_DATE_FORMAT"),
+                "total": float(autor.total),
+                "total_cobrado": float(autor.total_cobrado),
+                "referencia": str(autor.referencia),
+                "factura_generica": autor.factura_generica,
+                "reconexion_aplicada": autor.reconexion_aplicada,
+                "mora_aplicada": autor.mora_aplicada,
+                "total2": float(autor.total2),
+                "total3": float(autor.total3),
+                "impuestos": float(autor.impuestos),
+                "subtotal": float(autor.subtotal),
+                "descuento": float(autor.descuento),
+                "referencia2": str(autor.referencia2),
+                "referencia3": str(autor.referencia3),
+                "url": autor.url,
+                "url2": autor.url2,
+                "url3": autor.url3,
+                "estado": autor.get_estado_display(),
+
+                # FK 6
+                "ciudad__nombre": autor.ciudad.nombre,
+                "ciudad__personas": str(autor.ciudad.personas),
+                "ciudad__personas2": str(autor.ciudad.personas2),
+                "perfil__telefono": autor.perfil.telefono, 
+                "perfil__direccion": autor.perfil.direccion,
+                "perfil__informacion": autor.perfil.informacion,
+                
+                "perfil__editorial__nombre": autor.perfil.editorial.nombre,
+                "perfil__editorial__direccion": autor.perfil.editorial.direccion,
+                "perfil__editorial__telefono": autor.perfil.editorial.telefono,
+                "perfil__editorial__eslogan": autor.perfil.editorial.eslogan,
+                "perfil__editorial__rfc": autor.perfil.editorial.rfc,
+                "perfil__editorial__rfc2": autor.perfil.editorial.rfc2,
+
+                "perfil__editorial__distribuidor__nombre": autor.perfil.editorial.nombre,
+                # "cliente__user_cliente__estado",
+                # "cliente__user_cliente__ip",
+            })
         cache_autores = json.dumps(json_autores)
-    cache.set(Autores, cache_autores, timeout=21600)
+        cache.set(Autores, cache_autores, timeout=21600)
     return HttpResponse(cache_autores, content_type='application/json')
 
 
@@ -167,6 +187,7 @@ class ModelCiudadSerializer(serializers.ModelSerializer):
         model = Ciudad
         fields = '__all__'
 
+
 class AutorModelSerializer(serializers.ModelSerializer):
     nombre_completo = serializers.SerializerMethodField('get_full_name')
     ciudad = ModelCiudadSerializer()
@@ -176,7 +197,8 @@ class AutorModelSerializer(serializers.ModelSerializer):
         return obj.nombre + " " + obj.apellidos
 
     # def ciudad_nombre(self, obj):
-        return obj.ciudad.nombre
+    #    return obj.ciudad.nombre
+
     class Meta:
         model = Autor
         fields = [
@@ -207,6 +229,7 @@ class AutorModelSerializer(serializers.ModelSerializer):
             "estado",
             "ciudad",
         ]
+        read_only_fields = fields
 
 
 class AutorListView(generics.ListAPIView):
@@ -224,4 +247,57 @@ class AutorListView(generics.ListAPIView):
     renderer_classes = [JSONRenderer]
 
     def get_queryset(self):
-        return Autor.objects.select_related("perfil").prefetch_related("perfil__editorial").all()
+        return Autor.objects.select_related("perfil", "ciudad").prefetch_related("perfil__editorial").all()
+
+
+def table_api(request):
+    title_page = "Lista Autores - API con Django Rest Framework"
+    info_page = """
+        <p>La problematica al mostrar 9k registros con Rest Framework posiblemente sea lo de n+1, puesto que las tablas se relacionan. La solución es usar 
+        un serializer para el modelo que esta relacionado pero, aun con el modelo serializado y modificando el queryset para agregar el select_related y el prefetch_related, 
+        sigue siendo demasiado lento para mostrar los datos de tantas columnas!</p>
+
+        <ul>
+            <li>Tiempo con Mysql agregando mas columnas (14): <strong>4.62 Seg</strong></li>
+            <li>Tiempo con Mysql agregando mas columnas (24): <strong>11.39 Seg</strong></li>
+            <li>Tiempo con mysql agregando una columna relacionada y actualizando el query: <strong>23 Segundos</strong></li>
+            <li>Tiempo con mysql agregando una columna relacionada y serializada: <strong>44 Segundos</strong></li>
+        </ul>
+
+        <p></p>
+    """
+    return render(request, 'lado_cliente/lista_autores_api.html', {"title_page": title_page, "info_page": info_page})
+
+
+def table_no_cached(request):
+    url_json = reverse("lista_autores_json_no_cached")
+    title_page = "Lista Autores - Json creado con Queryset Recorrido"
+    info_page = """
+        <p>La problematica al mostrar 9k registros con recorriendo una query y creando el diccionario es el tiempo que tarda la vista en devolver la informacion
+        en formato json. El tiempo tambien aumento con validaciones (validando si un campo es null para poner que este vacio), o creando variables que 
+        crean html desde la vista (Botones de accion). </p>
+
+        <ul>
+            <li>Tiempo desde la vista obteniendo la vista desde sqlite (4 columas): <strong>288 ms</strong></li>
+            <li>Tiempo desde la vista obteniendo la info desde Mysql (4 columnas): <strong>316 ms</strong></li>
+            <li>Tiempo con Mysql agregando mas columnas (14): <strong>1.86 Seg</strong></li>
+            <li>Tiempo con Mysql agregando mas columnas (24): <strong>3.26 Seg</strong></li>
+            <li>Tiempo con Mysql agregando mas columnas (37): <strong>+13.65-17 Seg</strong></li>
+        </ul>
+
+        <p></p>
+    """
+    return render(request, 'lado_cliente/lista_autores.html', {"title_page": title_page, "info_page": info_page, "url_json": url_json})
+
+
+def table_cached(request):
+    url_json = reverse("lista_autores_json_cached")
+    title_page = "Lista Autores - Utilizando informacón en cache"
+    info_page = """
+        <p> Esta es la forma mas rapida de pasar la información a la tabla. Sin embargo, no todos los registros de todos los clientes pueden estar guardados.
+        Teniendo en cuenta que aproximadamente 100 clientes cuenten con mas de 8k registros, la informacion en cache se ve afectada?
+        
+        Tambien puede guardarse en un campo de base de datos y consultarse. </p>
+        <p></p>
+    """
+    return render(request, 'lado_cliente/lista_autores.html', {"title_page": title_page, "info_page": info_page, "url_json": url_json})
