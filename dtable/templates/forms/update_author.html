@@ -1,0 +1,31 @@
+{% extends 'bases/base.html' %}
+{% load static from staticfiles %}
+{% block title %} App Libreria {% endblock %}
+
+{% block content %} 
+
+    <form id="registro_form" class="form form-horizontal validate-form" method="POST">
+        <div class="row">
+            {% csrf_token %}
+            <div class="django-error-field">
+                {{form.non_field_errors}}
+            </div>
+            {% for field in form %}
+                <div class="col-md-4">
+                    <label for="{{field.id_for_label}}">{{field.label}}</label>
+                    {{field}}
+                    <div class="django-error-field">
+                        <p id="id_{{field.name}}">{{field.errors}} {{ field.field_errors }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        
+            <div class="text-center">
+                <a href="#" class="btn btn-light">Cancelar</a>
+                <button class="btn btn-primary" type="submit" name="btn_guardar">Guardar</button>
+                <p></p>
+            </div>
+        </div>
+    </form>
+
+{% endblock content %}

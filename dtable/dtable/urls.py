@@ -13,9 +13,12 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.conf.urls import url, include
 from django.contrib import admin
-from dtable.views import index, lista_autores_cliente,lista_libros_cliente, lista_autores_json, lista_libros_json, lista_autores_server, lista_libros_server, lista_autores_server_json, lista_libros_server_json, limpiar_cache
+from dtable.views import (
+    index, lista_autores_cliente,lista_libros_cliente, lista_autores_json, lista_libros_json, 
+    lista_autores_server, lista_libros_server, lista_autores_server_json, lista_libros_server_json, limpiar_cache)
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -35,3 +38,10 @@ urlpatterns = [
     url(r'^', include('table.urls')),
 
 ]
+
+if settings.DEBUG:
+    import debug_toolbar
+
+    urlpatterns += [
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ]

@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.db import models
-from django.core.cache import cache
-
+import json
 import random
 import uuid
+
+from django.db import models
+from django.core.cache import cache
 from django.utils import timezone
 
 # Create your models here.
@@ -30,7 +31,7 @@ class Autor(models.Model):
         (1, 'Pagada'),
         (2, 'Cancelada'),
         (3, 'En Revision'),
-        (4, 'Se Transfirio'),    
+        (4, 'Se Transfirio'),
     )
 
     ESTADOS = (
@@ -76,6 +77,8 @@ class Autor(models.Model):
     # fk
     ciudad = models.ForeignKey('table.Ciudad', verbose_name="Ciudad", null=True, related_name='autor_ciudad')
     perfil = models.ForeignKey('table.Perfil', verbose_name='Autores', null=True)
+    empresa = models.ForeignKey('table.Empresa', verbose_name="Empresa", blank=True, null=True,
+                                related_name='autor_empresa')
 
     class Meta:
         ordering = ['nombre']
@@ -86,7 +89,7 @@ class Autor(models.Model):
 
     def save(self, *args, **kwargs):
         #Se elimina el cache cada vez que se actualize la notificacion
-        cache.delete("Autores-")
+        # cache.delete("Autores-")
         super(Autor, self).save(*args, **kwargs)
 
 
@@ -124,6 +127,10 @@ class Ciudad(models.Model):
     personas = models.UUIDField(default=uuid.uuid4)
     personas2 = models.UUIDField(default=uuid.uuid4)
 
+    def __unicode__(self):
+            return '%s' %(self.nombre)
+
+
 class Libro(models.Model):
     titulo=models.CharField(max_length=100)
     autor=models.ManyToManyField(Autor)
@@ -136,3 +143,25 @@ class Libro(models.Model):
     def save(self, *args, **kwargs):
         cache.delete("Libros-")
         super(Libro, self).save(*args, **kwargs)
+
+
+class Empresa(models.Model):
+    nombre = models.CharField(max_length=50)
+
+    def __unicode__(self):
+        return self.nombre
+
+
+class FacturaCached(models.Model):
+    key = models.CharField(max_length=100)
+    data = models.TextField(blank=True)
+
+    def get_json_data(self, list_id=None):
+        if not list_id:
+            return json.dumps(json.loads(self.data))
+        else:
+            return json.dumps({key:val for key, val in json.loads(self.data).iteritems() if int(key) in list_id})
+            # Devolver el json pero unicamente del diccionario que necesito
+
+    def get_dict_data(self):
+        return json.loads(self.data)
